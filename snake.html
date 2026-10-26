@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>SNAKE.EXE</title>
+<meta name="description" content="SNAKE.EXE - a hacker-style snake game with skins, secrets and a terminal.">
+<meta name="theme-color" content="#020a04">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23020a04'/%3E%3Cpath d='M6 24h9v-9h6v-5h6' fill='none' stroke='%2300ff66' stroke-width='4'/%3E%3Crect x='24' y='6' width='5' height='5' fill='%23ff3b5c'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="snake.css">
+</head>
+<body>
+<noscript><p style="color:#0f6;font-family:monospace;padding:20px">SNAKE.EXE needs JavaScript. Please enable it and reload.</p></noscript>
+<canvas id="rain"></canvas>
+<div id="fx"></div>
+<div id="boot" class="hidden"><pre id="bootText"></pre></div>
+
+<main id="app">
+  <!-- START MENU -->
+  <section id="menu" class="panel">
+    <pre class="code" id="code" aria-hidden="true"></pre>
+    <div class="bar">
+      <button class="dot r" data-act="close" aria-label="Close"></button>
+      <button class="dot y" data-act="min" aria-label="Minimize"></button>
+      <button class="dot g" data-act="home" aria-label="Center window"></button>
+      <span id="winTitle">root@snake:~#</span>
+      <span class="tip">:: drag me</span>
+    </div>
+    <div id="body">
+      <h1>SNAKE.EXE</h1>
+      <p class="sub"><span id="tagText">&gt; eat the apples. grow. don't crash</span><span class="cursor">_</span></p>
+
+      <p class="label">&gt; How are you playing?</p>
+      <div class="row">
+        <button class="opt" data-device="pc">💻 PC / Laptop<small>W A S D or arrow keys</small></button>
+        <button class="opt" data-device="mobile">📱 Mobile<small>Swipe or touch pad</small></button>
+      </div>
+
+      <p class="label">&gt; Difficulty</p>
+      <div class="row three">
+        <button class="opt" data-level="easy">Easy<small>slow</small></button>
+        <button class="opt" data-level="normal">Normal<small>medium</small></button>
+        <button class="opt" data-level="hard">Hard<small>fast</small></button>
+      </div>
+
+      <p class="label">&gt; Walls</p>
+      <div class="row">
+        <button class="opt" data-walls="on">🧱 Walls<small>hit a wall = crash</small></button>
+        <button class="opt" data-walls="off">🌀 No walls<small>edges teleport you</small></button>
+      </div>
+
+      <div class="row go">
+        <button id="start" class="btn">[ START ]</button>
+        <button id="shopBtn" class="btn ghost">🛒 SHOP</button>
+      </div>
+      <p class="best">High score: <b id="best">0</b> · Coins: <b id="coins">0</b> ¢</p>
+      <p class="log" id="log"></p>
+    </div>
+
+    <div id="shopBody" class="hidden">
+      <h2 class="shopTitle">SHOP</h2>
+      <p class="wallet">Wallet: <b id="shopCoins">0</b> ¢</p>
+      <div class="prevwrap"><canvas id="shopPrev" width="280" height="64"></canvas></div>
+      <div class="row four">
+        <button class="opt" data-tab="skin">🐍 Skins</button>
+        <button class="opt" data-tab="badge">🏅 Badges</button>
+        <button class="opt" data-tab="apple">🍎 Apples</button>
+        <button class="opt" data-tab="board">🎨 Boards</button>
+      </div>
+      <div id="shopList" class="grid"></div>
+      <p class="log" id="shopMsg">&gt; earn coins: apples, ¢ bonus pickups, run bonus</p>
+      <button id="shopBack" class="btn ghost">[ BACK ]</button>
+    </div>
+
+    <p class="credit">// built by <b id="owner">Maithem</b> :: project owner :: v1.0</p>
+  </section>
+
+  <!-- GAME -->
+  <section id="game" class="hidden">
+    <div class="hud">
+      <span>Score <b id="score">0</b><b id="combo" class="combo"></b></span>
+      <span>Best <b id="hi">0</b></span>
+      <span class="gold">¢ <b id="hudCoins">0</b></span>
+      <button id="pauseBtn" class="mini" aria-label="Pause">II</button>
+    </div>
+
+    <div class="wrap">
+      <canvas id="board"></canvas>
+
+      <div id="paused" class="overlay hidden">
+        <h2>PAUSED</h2>
+        <button id="resume" class="btn">Resume</button>
+        <button class="btn ghost" data-menu>Menu</button>
+      </div>
+
+      <div id="over" class="overlay danger hidden">
+        <h2 id="overTitle">SYSTEM CRASHED</h2>
+        <p>Score <b id="finalScore">0</b></p>
+        <p id="overMsg" class="overMsg"></p>
+        <button id="again" class="btn">Play again</button>
+        <button class="btn ghost" data-menu>Menu</button>
+      </div>
+    </div>
+
+    <div id="pad" class="pad hidden">
+      <button data-d="0,-1" class="up" aria-label="Up">&#9650;</button>
+      <button data-d="-1,0" class="left" aria-label="Left">&#9664;</button>
+      <button data-d="0,1" class="down" aria-label="Down">&#9660;</button>
+      <button data-d="1,0" class="right" aria-label="Right">&#9654;</button>
+    </div>
+
+    <p id="hint" class="hint"></p>
+    <div id="gameLog" class="glog"></div>
+  </section>
+</main>
+
+<!-- corner terminal -->
+<div id="term">
+  <div id="termWin" class="hidden">
+    <div class="tbar"><span>maithem@mainframe:~$</span><button id="termX" aria-label="Close terminal">&times;</button></div>
+    <div id="termOut"></div>
+    <label class="tin"><span>$</span><input id="termIn" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="type cmd"></label>
+  </div>
+  <button id="termBtn" class="termBtn" aria-label="Open terminal">&gt;_</button>
+</div>
+
+<script src="snake.js"></script>
+</body>
+</html>
